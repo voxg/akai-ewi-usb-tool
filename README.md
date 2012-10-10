@@ -3,7 +3,7 @@ akai-ewi-usb-tool
 
 A small utility to configure the AKAI EWI USB.
 
-This program is written in D (dlang.org) and uses GtkD (https://github.com/downloads/gtkd-developers/GtkD/GtkD-2.0.zip).  I've never used D or GTK before, so suggestions and patches are more than welcome.
+This program is written in D (http://dlang.org) and uses GtkD (https://github.com/downloads/gtkd-developers/GtkD/GtkD-2.0.zip).  I've never used D or GTK before, so suggestions and patches are more than welcome.
 
 I tried to make this program easy to port, except for one little detail...  I use the amidi program from alsa-utils for all MIDI I/O.  There are a few not-so-bad reasons to do this.
    - It's super easy, so I got the tool written quickly and was back to practicing in no time.
