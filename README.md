@@ -1,16 +1,15 @@
 akai-ewi-usb-tool
 =================
 
-A small utility to configure the AKAI EWI USB.
+A small utility to configure the Akai EWI USB.
 
-This program is written in D (http://dlang.org) and uses GtkD (https://github.com/downloads/gtkd-developers/GtkD/GtkD-2.0.zip).  I've never used D or GTK before, so suggestions and patches are more than welcome.
+This program is written in D (http://dlang.org) and uses [GtkD](http://www.dsource.org/projects/gtkd).  I've never used D or GTK before, so suggestions and patches are more than welcome.
 
-I tried to make this program easy to port, except for one little detail...  I use the amidi program from alsa-utils for all MIDI I/O.  There are a few not-so-bad reasons to do this.
-   - It's super easy, so I got the tool written quickly and was back to practicing in no time.
-   - It's an easy tool to re-write for other platforms, so there's a quick-and-dirty path forward.
-   - The product ships with a configuration tool for Windows and Mac, so the need for portability is questionable.
-
-That said, I would really prefer to re-implement the MIDI I/O code to use OSS, ALSA, Win32, and CoreMIDI APIs so that it could be used on any platform without any additional dependencies or kludgy work-arounds.  I would need help building and testing for OSS and CoreMIDI, so please contact me if you want to help me acheive this goal.
+At the moment MIDI I/O is a little funny.
+   - Linux support is via the amidi program from the alsa-utils package.  If amidi is in your path, it should work well.
+   - Windows support is done via the standard MMSYSTEM.H API, but I haven't yet compiled the code on Windows, so it's ... iffy at best.
+   - I don't have a Mac at my disposal, so porting to CoreMIDI would require some help or donated hardware.
+   - OSS should be easy to do, but I don't have OSS set up currently.  If anybody wants this, please send me an email via Gmail at greglyons50.
 
 Product information about the EWI USB can be found at https://www.akaipro.com/ewiusb
 

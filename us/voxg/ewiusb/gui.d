@@ -2,7 +2,11 @@ module us.voxg.ewiusb.gui;
 
 import
 us.voxg.ewiusb.configuration,
+us.voxg.ewiusb.icon,
+us.voxg.ewiusb.midi,
 us.voxg.ewiusb.sysexfile,
+gdk.Pixbuf,
+glib.GException,
 gtk.AboutDialog,
 gtk.Button,
 gtk.ComboBoxText,
@@ -27,8 +31,8 @@ gtk.VBox,
 gtkc.gtktypes,
 std.conv,
 std.file,
-std.process,
-std.regex,
+//std.process,
+//std.regex,
 std.string,
 std.stdio;
 
@@ -289,14 +293,9 @@ class MidiDeviceCombo : ComboBoxText {
     string current = getActiveId();
     bool found = false;
     removeAll();
-    string[] devices = splitLines(shell("amidi -l"));
-    auto r = regex(`^IO +([^ ]+) +(.*)$`);
-    foreach (string s; devices) {
-      foreach (m; match(s, r)) {
-        auto c = m.captures;
-        append(c[1], c[2] ~ " (" ~ c[1] ~ ")");
-        if (current == c[1]) found = true;
-      }
+    foreach (d; MidiIO.getDevices()) {
+      if (current == d.address) found = true;
+      append(d.address, d.name);
     }
     if (found) setActiveId(current); else setActive(-1);
   }
@@ -316,6 +315,11 @@ class AkaiEwiUsbMain : MainWindow {
 
   this() {
     super("AKAI EWI USB Configuration Tool");
+    try {
+      setIcon(ewi_usb_config_icon());
+    } catch (GException e) {
+      // ignore
+    }
     config = new Configuration();
 
     VBox outerBox = new VBox(false, 10);
@@ -440,16 +444,8 @@ class AkaiEwiUsbMain : MainWindow {
       return;
     }
     status.push(statusContext, "Sending MIDI to " ~ dev);
-    string command = "amidi -p \"" ~ dev ~ "\" -S ";
-    foreach (message; config.toSysex()) {
-      command ~= "B0 63 01 B0 62 04 B0 06 20 "; // NRPN, turns on sysex mode
-      foreach (b; message) {
-        command ~= format("%02X ", cast(uint)b); // sysex to string
-      }
-    }
-    command ~= "B0 63 01 B0 62 04 B0 06 10"; // NRPN, turn off sysex mode
     try {
-      shell(command);
+      MidiIO.configure(dev, config.toSysex());
       //status.pop(statusContext);
       status.push(statusContext, "MIDI data sent to " ~ dev);
     } catch (Exception e) {
@@ -475,11 +471,10 @@ class AkaiEwiUsbMain : MainWindow {
     try {
       // First call is for bank 0
       status.push(statusContext, "Beginning MIDI transfer");
-      config.applySysex(parseSysex(shell("amidi -p " ~ dev ~ " -S B06301B06204B00620F0477F6D400000F7 -d -t 1")));
+      config.applySysex(MidiIO.receiveConfig(dev, 0));
       status.push(statusContext, "Setup parameters received");
-      config.applySysex(parseSysex(shell("amidi -p " ~ dev ~ " -S B06301B06204B00620F0477F6D420000F7 -d -t 1")));
+      config.applySysex(MidiIO.receiveConfig(dev, 2));
       status.push(statusContext, "Performance/Controller parameters received");
-      shell("amidi -p " ~ dev ~ " -S B06301B06204B00610");
       status.push(statusContext, "Received complete configuration via MIDI");
     } catch (Exception e) {
       status.push(statusContext, "MIDI I/O failed: " ~ e.toString());
